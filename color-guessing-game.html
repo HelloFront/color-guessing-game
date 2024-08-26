@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Open+Sans:wght@300;400;500;600;700&family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <title>Color Guessing</title>
+</head>
+<body>
+  <div class="main-container">
+    
+    <header>
+      <h1>>_ welcome to <span style="color: green;">Color</span> <span style="color: orange;">Guessing</span> <span style="color: rgb(108, 49, 49);">Game;</span></h1>
+      <button type="button" class="startGameButton" id="start-btn" onclick="handlePressButton()">./start game;</button>
+    </header>
+
+    <div class="description-container-visible" id="game-description-container">
+      <aside class="aside">The <strong><span style="color: green;">Color</span> <span style="color: orange;">Guessing</span> <span style="color: rgb(108, 49, 49);">Game</span></strong> challenges players to match a randomly generated <span style="color: red;"><strong>color</strong></span> by selecting from a palette of options displayed on the screen. The computer generates a <span style="color: blue;"><strong>color</strong></span>, and your task is to identify and select the correct one. It’s a fun and intuitive way to test your <span style="color: blueviolet;"><strong>color</strong></span> matching skills right in your browser!</aside>
+      <span class="right-side">>_ if you guess correctly, the background color of the page will change to match your chosen color, adding a satisfying visual reward to your success! </span>
+    </div>
+
+    <div class="hidden" id="color-generation-loader-container">
+      <span id="info-progress-text">~/uuh; <br>➜ generating random color... <br> ➜ please wait a moment;</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="60" height="60" id="loader-indicator">
+        <rect fill="#000000" stroke="#000000" stroke-width="2" width="30" height="30" x="25" y="-100">
+          <animate attributeName="y" calcMode="spline" dur="1.6" values="10;50;10;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate>
+        </rect>
+        <rect fill="#000000" stroke="#000000" stroke-width="2" width="30" height="30" x="85" y="80">
+          <animate attributeName="y" calcMode="spline" dur="1.6" values="10;50;10;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate>
+        </rect>
+        <rect fill="#000000" stroke="#000000" stroke-width="2" width="30" height="30" x="145" y="80">
+          <animate attributeName="y" calcMode="spline" dur="1.6" values="10;50;10;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate>
+        </rect>
+      </svg>
+    </div>
+
+    <fieldset id="plates-container" class="checkbox-group-visible"></fieldset>
+    
+    <div class="hidden" id="game-log-container">
+      <p id="game-time">./your time: 0s &#8987;</p>
+      <p id="game-attempt">./attempts: 0 &#128465;</p>
+      <p id="game-random-color">./random color: <span class="blurry-text"><strong></strong></span>;</p>
+    </div>
+  </div>
+  <script>
+    const FAILED_ATTEMPTS_ARRAY = ['./unfortunately your guess is incorect. no worries and try again;', './nice try, but that’s not it. try again;', './not the correct one. don\'t give up;', './almost there! pick another color;', './close, but not the right color. give it another shot;', './oops, not quite. try again;']
+    const COLORS_ARRAY = ['blue', 'cyan', 'gold', 'gray', 'green', 'magenta', 'orange', 'red', 'yellow'];
+    let CHECKED_PLATES_ARRAY = COLORS_ARRAY.map(() => false);
+
+    let isGameStarted = false;
+    let gameTimeCounter = 0;
+    let gameAttemptsCounter = 0;
+    let showTimeInterval;
+    let gameDelayTimeout;
+    let targetColorIndex;
+
+    const platesContainerElement = document.getElementById('plates-container');
+    const mainButtonElement = document.getElementById('start-btn');
+    const headerInformationElement = document.getElementById('info-progress-text');
+    const loaderContainerElement = document.getElementById('color-generation-loader-container');
+    const loaderElement = document.getElementById('loader-indicator');
+    const gameDescriptionContainerElement = document.getElementById('game-description-container');
+    const gameBottomLogsContainerElement = document.getElementById('game-log-container');
+    const gameTimeElement = document.getElementById('game-time');
+    const gameAttemptElement = document.getElementById('game-attempt');
+    const gameRandomColorElement = document.getElementById('game-random-color');
+
+// render and update color plates;
+    const handleRenderColorPlates = (disabled) => {  
+      platesContainerElement.innerHTML = '';
+      
+      COLORS_ARRAY.forEach((color, index) => {
+        const checkedPlate = CHECKED_PLATES_ARRAY[index] ? 'checked' : '';
+        const disabledPlate = disabled || checkedPlate ? 'disabled' : '';
+        const hoverColorPlate = disabled ? 'transparent' : color;
+        const plateColorName= color.toUpperCase();
+
+        platesContainerElement.insertAdjacentHTML('beforeend',
+        `<div class="checkbox">
+          <label class="checkbox-wrapper">
+            <input type="checkbox" class="checkbox-input" name="${color}" ${disabledPlate} onchange="handleCheckBox(this)" ${checkedPlate} />
+            <span class="checkbox-tile" style="--hover_color: ${hoverColorPlate}; --plate_color: ${color}">
+              <span class="checkbox-label">${plateColorName}</span>
+            </span>
+          </label>
+        </div>`);
+      });
+    };
+
+// functions for render and update DOM elements;
+    const handleChangeBodyBackgroundColor = (color) => document.body.style.background = color;
+    const handleShowStartButtonText = (updatedInfo) => mainButtonElement.textContent = updatedInfo;
+    const handleShowHeaderInfromation = (updatedInfo) => headerInformationElement.innerHTML = updatedInfo;
+    const handleShowAttemptCounter = () => gameAttemptElement.innerHTML = `./attempts: ${gameAttemptsCounter} &#128465;`;
+    const handleShowTargetColor = (withBlur = true) => {
+      gameRandomColorElement.innerHTML = 
+        `./random color: <span ${withBlur && 'class="blurry-text"'}><strong>${COLORS_ARRAY[targetColorIndex]}</strong></span>;`;
+    };
+    const handleShowGameTime = () => {
+      gameTimeElement.innerHTML = `./your time: ${gameTimeCounter}s &#8987;`;
+
+      showTimeInterval = setInterval(() => {
+        gameTimeCounter++;
+        gameTimeElement.innerHTML = `./your time: ${gameTimeCounter}s &#8987;`;
+      }, 1000);
+    };
+
+// reset all data when user won or end game
+    const handleResetAllData = () => {
+      CHECKED_PLATES_ARRAY = [...CHECKED_PLATES_ARRAY.map(() => false)];
+      clearInterval(showTimeInterval);
+      clearTimeout(gameDelayTimeout);
+
+      gameAttemptsCounter = 0;
+      gameTimeCounter = 0;
+      isGameStarted = false;
+    };
+
+// function game start where i can hide some DOM elements and some others
+    const handleGameStart = () => {
+      loaderContainerElement.className = 'color-generation-container-visible';
+      gameDescriptionContainerElement.className= 'hidden';
+      loaderElement.style.display = 'block';
+      handleShowHeaderInfromation('~/uuh; <br>➜ generating random color... <br> ➜ please wait a moment;');
+
+      handleResetAllData();
+      gameDelayTimeout = setTimeout(() => {  // set timeout just for small delay in 1 second
+        targetColorIndex = Math.floor(Math.random() * COLORS_ARRAY.length);
+
+        platesContainerElement.className = 'checkbox-group-visible';
+        gameBottomLogsContainerElement.className = 'game-logs-visible';
+        loaderElement.style.display = 'none';
+
+        handleShowHeaderInfromation('~/the color has been generated; <br> ~/take your best guess;');
+        handleShowStartButtonText('./end game;');
+        handleChangeBodyBackgroundColor('white');
+        handleShowGameTime();
+        handleShowTargetColor();
+        handleShowAttemptCounter();
+        
+        handleRenderColorPlates();
+        isGameStarted = true;
+      }, 1000);
+    }
+
+// similar logic as game start but in reverse
+    const handleGameEnd = () => {
+      gameDescriptionContainerElement.className= 'description-container-visible';
+      loaderContainerElement.className = 'hidden';
+      platesContainerElement.className = 'hidden';
+      gameBottomLogsContainerElement.className = 'hidden';
+
+      handleResetAllData();
+      handleShowStartButtonText('./start game;');
+      handleChangeBodyBackgroundColor('white');
+      handleShowAttemptCounter();
+      handleShowGameTime();
+      isGameStarted = false;
+    };
+
+// main button handler
+    const handlePressButton = () => {
+      if(isGameStarted) {
+        return handleGameEnd();
+      };
+
+      return handleGameStart();
+    };
+
+// main logic here - checking guess and render visual content in HTML depends of if statements
+    const handleCheckGuess = (guessingColorIndex) => {
+      const randomFailedAttemptResponse = FAILED_ATTEMPTS_ARRAY[Math.floor(Math.random() * FAILED_ATTEMPTS_ARRAY.length)];
+
+      if(guessingColorIndex < targetColorIndex) {
+        handleShowHeaderInfromation(`➜ progress... <br>  ${randomFailedAttemptResponse} <br><br>  *alphabetically your { color < than_mine } &#128268;`);
+      } else if(guessingColorIndex > targetColorIndex) {
+        handleShowHeaderInfromation(`➜ progress... <br>  ${randomFailedAttemptResponse} <br><br>  *alphabetically your { color > than_mine } &#128268;`);
+      } else {
+        handleShowHeaderInfromation('➜ ./congratulations &#127881; &#127882; <br>>_ you guessed the right color &#128640;  <br>>_ watch as the background changes to your winning color &#127745;');
+        handleChangeBodyBackgroundColor(COLORS_ARRAY[guessingColorIndex]);
+        handleShowStartButtonText('./try again;');
+        handleShowTargetColor(false);
+
+        handleRenderColorPlates(true);
+        clearInterval(showTimeInterval);
+        clearTimeout(gameDelayTimeout);
+        isGameStarted = false;
+      };
+    };
+
+// handle click on color plates - changing styles and making check guess
+    const handleCheckBox = (e) => {
+      gameAttemptsCounter++;
+      const colorName = e.name;
+      const indexOfCheckedColor = COLORS_ARRAY.indexOf(colorName);
+
+      const updatedCheckedColorsArray = CHECKED_PLATES_ARRAY.map((item, index) => indexOfCheckedColor === index ? true : false);
+      CHECKED_PLATES_ARRAY = [...updatedCheckedColorsArray];
+
+      handleRenderColorPlates();
+      handleCheckGuess(indexOfCheckedColor);
+      handleShowAttemptCounter();
+    };
+  </script>
+</body>
+</html>

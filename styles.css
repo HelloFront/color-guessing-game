@@ -1,0 +1,166 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+
+  *,
+  *:after,
+  *:before {
+    box-sizing: border-box;
+  }
+
+  body {
+    padding: 0 50px;
+    font-family: "JetBrains Mono", monospace;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f8f9;
+  }
+  .main-container {
+    background-color: #f1f1f1;
+    padding: 0 50px;
+    width: 100%;
+    min-height: 800px;
+    border: 3px solid;
+    box-shadow: 0.5rem 0.5rem 0;
+  }
+  .checkbox-group-visible {
+    margin: 80px 0 300px;
+    padding: 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    border: none;
+    -webkit-user-select: none;
+      -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    
+  }
+  .checkbox-group-hidden {
+    display: none;
+  }
+  .checkbox-group > * {
+    margin: 0.5rem 0.5rem;
+  }
+
+  .checkbox-input {
+    clip: rect(0 0 0 0);
+    -webkit-clip-path: inset(100%);
+            clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+  .checkbox-input:checked + .checkbox-tile {
+    border-color: var(--plate_color);
+    box-shadow: 0 5px 10px var(--plate_color), 0 0 0 2px  var(--plate_color);;
+  }
+  .checkbox {
+    margin: 5px;
+  }
+  .checkbox-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 7rem;
+    min-height: 7rem;
+    border-bottom: 3px solid #ffffff00;
+    background-color: #fff;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    transition: 0.15s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  .checkbox-tile:hover {
+    border-color: var(--hover_color);
+  }
+  .checkbox-label {
+    color: #707070;
+    transition: 0.375s ease;
+    text-align: center;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .startGameButton {
+    text-align: center;
+    font-family: "JetBrains Mono", monospace;
+    background-color: white;
+    margin-right: 4px;
+    height: 50px;
+    width: 300px;
+    cursor: pointer;
+    box-shadow: 0rem 0rem 0 #21212100;
+    transition: ease-in 0.3s;
+  }
+  .startGameButton:active {
+    background-color: rgb(226, 226, 226);
+  }
+  .startGameButton:hover {
+    box-shadow: 0.2rem 0.2rem 0 #212121;
+  }
+  .description-container-visible {
+    display: block;
+    padding: 20px;
+    margin-top: 100px;
+    line-height: 28px;
+    letter-spacing: 1px;
+  }
+  .aside {
+    margin: 15px 0;
+  }
+  .right-side {
+    margin: 0;
+    padding: 0 10px;
+    border-radius: 3px;
+    background-color: #e7e7e7;
+    float: left;
+    display: inline;
+  }
+  .color-generation-container-visible {
+    height: 50px;
+    margin-top: 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .hidden {
+    display: none;
+  }
+  .game-logs-visible {
+    height: 30px;
+    line-height: 12px;
+  }
+  .blurry-text {
+    color: transparent;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.205);
+  }
+
+  @media (max-width: 1340px) {
+    .checkbox-group-visible {
+      margin: 100px 0 160px;
+    }
+  }
+
+  @media (max-width: 1120px) {
+    .checkbox-group-visible {
+      margin: 100px 0;
+    }
+  }
+  @media (max-width: 870px) {
+    .checkbox-group-visible {
+      margin: 100px 0 50px;
+    }
+    .main-container {
+      min-height: 1000px;
+    }
+  }
